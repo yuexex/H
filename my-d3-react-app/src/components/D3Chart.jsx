@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
-import { addNodeOnClick } from "../Util/addNode";
+import { addNodeOnDblClick } from "../Util/addNodeOnDblClick"; // Correct import path
 import ExportButton from "./ExportButton";
 import D3Header from "./D3Header";
+import RemoveButton from "./RemoveButton";
 
 const D3Chart = ({ width, height, strength }) => {
   const d3Container = useRef(null);
@@ -17,11 +18,14 @@ const D3Chart = ({ width, height, strength }) => {
   ]);
   const [lastNodeId, setLastNodeId] = useState("C".charCodeAt(0));
   const [mousedownNode, setMousedownNode] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
 
   useEffect(() => {
     const svg = d3.select(d3Container.current);
 
-    // Define the drag line
+    svg.on("dblclick", null);
+    svg.on("click", null);
+
     const dragLine = svg
       .append("path")
       .attr("class", "link dragline hidden")
@@ -86,6 +90,21 @@ const D3Chart = ({ width, height, strength }) => {
           setMousedownNode(null);
           updateGraph();
         })
+        .on("click", (event, d) => {
+          if (selectedNode === null) {
+            setSelectedNode(d);
+          } else {
+            const newLink = {
+              source: selectedNode,
+              target: d,
+              left: false,
+              right: true,
+            };
+            setLinks([...links, newLink]);
+            setSelectedNode(null);
+            updateGraph();
+          }
+        })
         .call(
           d3
             .drag()
@@ -119,6 +138,16 @@ const D3Chart = ({ width, height, strength }) => {
         }
       });
 
+      addNodeOnDblClick(
+        svg,
+        nodes,
+        setNodes,
+        links,
+        setLinks,
+        lastNodeId,
+        setLastNodeId
+      );
+
       function ticked() {
         link
           .attr("x1", (d) => d.source.x)
@@ -148,8 +177,6 @@ const D3Chart = ({ width, height, strength }) => {
         d.fy = null;
       }
 
-      addNodeOnClick(svg, nodes, setNodes, links, setLinks);
-
       return () => {
         svg.selectAll("*").remove();
         simulation.stop();
@@ -161,13 +188,28 @@ const D3Chart = ({ width, height, strength }) => {
     return () => {
       if (cleanup) cleanup();
     };
-  }, [width, height, nodes, links, mousedownNode, strength]);
+  }, [width, height, nodes, links, mousedownNode, strength, lastNodeId]);
+
+  const removeLastNode = () => {
+    if (nodes.length > 1) {
+      const newNodes = nodes.slice(0, nodes.length - 1);
+      const newLinks = links.filter(
+        (link) =>
+          link.source.id !== nodes[nodes.length - 1].id &&
+          link.target.id !== nodes[nodes.length - 1].id
+      );
+      setNodes(newNodes);
+      setLinks(newLinks);
+      setLastNodeId(lastNodeId - 1);
+    }
+  };
 
   return (
     <div>
       <D3Header svgRef={d3Container} width={width} height={height} />
       <svg ref={d3Container}></svg>
       <ExportButton svgRef={d3Container} />
+      <RemoveButton onClick={removeLastNode} />
     </div>
   );
 };
