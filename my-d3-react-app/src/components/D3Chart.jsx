@@ -1,29 +1,29 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { toPng } from "html-to-image";
+import { addNodeOnClick } from "../utils/addNode";
 
 const D3Chart = ({ width, height }) => {
   const d3Container = useRef(null);
+  const [nodes, setNodes] = useState([
+    { id: "A", reflexive: false },
+    { id: "B", reflexive: false },
+    { id: "C", reflexive: false },
+  ]);
+  const [links, setLinks] = useState([
+    { source: "A", target: "B", left: false, right: true },
+    { source: "B", target: "C", left: false, right: true },
+  ]);
 
   useEffect(() => {
-    // Function to initialize the D3 chart
-    const initializeChart = () => {
-      const svg = d3
-        .select(d3Container.current)
-        .attr("width", width)
-        .attr("height", height)
-        .style("border", "1px solid black");
+    const svg = d3
+      .select(d3Container.current)
+      .attr("width", width)
+      .attr("height", height)
+      .style("border", "1px solid black");
 
-      const nodes = [
-        { id: "A", reflexive: false },
-        { id: "B", reflexive: false },
-        { id: "C", reflexive: false },
-      ];
-
-      const links = [
-        { source: nodes[0], target: nodes[1], left: false, right: true },
-        { source: nodes[1], target: nodes[2], left: false, right: true },
-      ];
+    const updateGraph = () => {
+      svg.selectAll("*").remove();
 
       const simulation = d3
         .forceSimulation(nodes)
@@ -78,14 +78,19 @@ const D3Chart = ({ width, height }) => {
 
       function ticked() {
         link
-          .attr("x1", (d) => d.source.x)
-          .attr("y1", (d) => d.source.y)
-          .attr("x2", (d) => d.target.x)
-          .attr("y2", (d) => d.target.y);
+          .attr("x1", (d) => getNodePosition(d.source, "x"))
+          .attr("y1", (d) => getNodePosition(d.source, "y"))
+          .attr("x2", (d) => getNodePosition(d.target, "x"))
+          .attr("y2", (d) => getNodePosition(d.target, "y"));
 
         node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
 
         label.attr("x", (d) => d.x).attr("y", (d) => d.y);
+      }
+
+      function getNodePosition(id, axis) {
+        const node = nodes.find((node) => node.id === id);
+        return node ? node[axis] : 0;
       }
 
       function dragstarted(event, d) {
@@ -105,20 +110,20 @@ const D3Chart = ({ width, height }) => {
         d.fy = null;
       }
 
+      addNodeOnClick(svg, nodes, setNodes, links, setLinks);
+
       return () => {
         svg.selectAll("*").remove();
         simulation.stop();
       };
     };
 
-    // Initialize the chart only once
-    const cleanup = initializeChart();
+    const cleanup = updateGraph();
 
-    // Cleanup function to remove the D3 chart on component unmount
     return () => {
       if (cleanup) cleanup();
     };
-  }, [width, height]); // Add width and height as dependencies
+  }, [width, height, nodes, links]);
 
   const exportAsPng = () => {
     if (d3Container.current) {
