@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { addNodeOnClick } from "../Util/addNode";
 import ExportButton from "./ExportButton";
 import D3Header from "./D3Header"; // Import the D3Header component
+import Slider from "./Slider"; // Import the Slider component
 
 const D3Chart = ({ width, height }) => {
   const d3Container = useRef(null);
@@ -15,9 +16,18 @@ const D3Chart = ({ width, height }) => {
     { source: "A", target: "B", left: false, right: true },
     { source: "B", target: "C", left: false, right: true },
   ]);
+  const [lastNodeId, setLastNodeId] = useState("C".charCodeAt(0));
+  const [mousedownNode, setMousedownNode] = useState(null);
+  const [forceStrength, setForceStrength] = useState(-500); // State for force strength
 
   useEffect(() => {
     const svg = d3.select(d3Container.current);
+
+    const dragLine = svg
+      .append("path")
+      .attr("class", "link dragline hidden")
+      .attr("d", "M0,0L0,0")
+      .style("marker-end", "url(#end-arrow)");
 
     const updateGraph = () => {
       svg.selectAll("*").remove();
@@ -31,7 +41,7 @@ const D3Chart = ({ width, height }) => {
             .id((d) => d.id)
             .distance(150)
         )
-        .force("charge", d3.forceManyBody().strength(-500))
+        .force("charge", d3.forceManyBody().strength(forceStrength)) // Use the forceStrength state
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("tick", ticked);
 
@@ -43,7 +53,8 @@ const D3Chart = ({ width, height }) => {
         .enter()
         .append("line")
         .attr("stroke-width", 2)
-        .attr("stroke", "#999");
+        .attr("stroke", "#999")
+        .attr("marker-end", "url(#end-arrow)");
 
       const node = svg
         .append("g")
@@ -54,6 +65,28 @@ const D3Chart = ({ width, height }) => {
         .append("circle")
         .attr("r", 12)
         .attr("fill", "#69b3a2")
+        .on("mousedown", (event, d) => {
+          if (event.ctrlKey) return;
+          setMousedownNode(d);
+          dragLine
+            .classed("hidden", false)
+            .attr("d", `M${d.x},${d.y}L${d.x},${d.y}`);
+        })
+        .on("mouseup", (event, d) => {
+          if (!mousedownNode) return;
+
+          dragLine.classed("hidden", true);
+
+          const newLink = {
+            source: mousedownNode.id,
+            target: d.id,
+            left: false,
+            right: true,
+          };
+          setLinks([...links, newLink]);
+          setMousedownNode(null);
+          updateGraph();
+        })
         .call(
           d3
             .drag()
@@ -72,6 +105,20 @@ const D3Chart = ({ width, height }) => {
         .attr("dx", 15)
         .attr("dy", 4)
         .text((d) => d.id);
+
+      svg.on("mousemove", function (event) {
+        if (!mousedownNode) return;
+
+        const [x, y] = d3.pointer(event);
+        dragLine.attr("d", `M${mousedownNode.x},${mousedownNode.y}L${x},${y}`);
+      });
+
+      svg.on("mouseup", function () {
+        if (mousedownNode) {
+          dragLine.classed("hidden", true);
+          setMousedownNode(null);
+        }
+      });
 
       function ticked() {
         link
@@ -120,12 +167,14 @@ const D3Chart = ({ width, height }) => {
     return () => {
       if (cleanup) cleanup();
     };
-  }, [width, height, nodes, links]);
+  }, [width, height, nodes, links, mousedownNode, forceStrength]);
 
   return (
     <div>
       <D3Header svgRef={d3Container} width={width} height={height} />{" "}
       {/* Use the D3Header component */}
+      <Slider value={forceStrength} onChange={setForceStrength} />{" "}
+      {/* Use the Slider component */}
       <svg ref={d3Container}></svg>
       <ExportButton svgRef={d3Container} />{" "}
       {/* Use the ExportButton component */}
