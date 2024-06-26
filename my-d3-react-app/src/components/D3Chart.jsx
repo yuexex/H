@@ -2,14 +2,12 @@ import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { toPng } from "html-to-image";
 
-const D3Chart = () => {
+const D3Chart = ({ width, height }) => {
   const d3Container = useRef(null);
 
   useEffect(() => {
-    if (d3Container.current) {
-      const width = 960;
-      const height = 500;
-
+    // Function to initialize the D3 chart
+    const initializeChart = () => {
       const svg = d3
         .select(d3Container.current)
         .attr("width", width)
@@ -106,8 +104,21 @@ const D3Chart = () => {
         d.fx = null;
         d.fy = null;
       }
-    }
-  }, []);
+
+      return () => {
+        svg.selectAll("*").remove();
+        simulation.stop();
+      };
+    };
+
+    // Initialize the chart only once
+    const cleanup = initializeChart();
+
+    // Cleanup function to remove the D3 chart on component unmount
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [width, height]); // Add width and height as dependencies
 
   const exportAsPng = () => {
     if (d3Container.current) {
