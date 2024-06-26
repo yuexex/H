@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { toPng } from "html-to-image";
-import { addNodeOnClick } from "../utils/addNode";
+import { addNodeOnClick } from "../Util/addNode";
 
 const D3Chart = ({ width, height }) => {
   const d3Container = useRef(null);
