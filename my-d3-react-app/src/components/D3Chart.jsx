@@ -25,7 +25,13 @@ const D3Chart = ({ width, height, strength }) => {
   const [nodes, setNodes] = useState([
     { id: "A", reflexive: false, label: "A", x: width / 3, y: height / 2 },
     { id: "B", reflexive: false, label: "B", x: width / 2, y: height / 2 },
-    { id: "C", reflexive: false, label: "C", x: (2 * width) / 3, y: height / 2 },
+    {
+      id: "C",
+      reflexive: false,
+      label: "C",
+      x: (2 * width) / 3,
+      y: height / 2,
+    },
   ]);
   const [links, setLinks] = useState([
     { source: "A", target: "B", left: false, right: true },
@@ -59,7 +65,15 @@ const D3Chart = ({ width, height, strength }) => {
       height
     );
 
-    const cleanup = updateGraph(svg, nodes, links, dragLine, width, height, strength);
+    const cleanup = updateGraph(
+      svg,
+      nodes,
+      links,
+      dragLine,
+      width,
+      height,
+      strength
+    );
 
     return () => {
       if (cleanup) cleanup();
@@ -72,19 +86,34 @@ const D3Chart = ({ width, height, strength }) => {
     updateGraph(svg, nodes, links, null, width, height, strength);
   }, [nodes, links]);
 
-  const updateGraph = (svg, nodes, links, dragLine, width, height, strength) => {
+  const updateGraph = (
+    svg,
+    nodes,
+    links,
+    dragLine,
+    width,
+    height,
+    strength
+  ) => {
     const link = createLinks(svg, links);
     const node = createNodes(svg, nodes, dragLine);
 
-    const simulation = createSimulation(nodes, links, width, height, strength, () => {
-      link
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+    const simulation = createSimulation(
+      nodes,
+      links,
+      width,
+      height,
+      strength,
+      () => {
+        link
+          .attr("x1", (d) => d.source.x)
+          .attr("y1", (d) => d.source.y)
+          .attr("x2", (d) => d.target.x)
+          .attr("y2", (d) => d.target.y);
 
-      node.attr("transform", (d) => `translate(${d.x},${d.y})`);
-    });
+        node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+      }
+    );
 
     simulation.alpha(1).restart();
 
@@ -147,14 +176,17 @@ const D3Chart = ({ width, height, strength }) => {
       .style("font", "14px 'Helvetica Neue'")
       .style("background", "transparent")
       .style("border", "none")
-      .html((d) => `<input type='text' value='${d.label}' style='width: 100%; background: transparent; border: none;' />`);
+      .html(
+        (d) =>
+          `<input type='text' value='${d.label}' style='width: 100%; background: transparent; border: none;' />`
+      );
 
     foreignObject
       .on("mousedown", (event, d) => handleMouseDown(event, d, dragLine))
       .on("mouseup", (event, d) => handleMouseUpNode(event, d, dragLine))
       .on("click", (event, d) => handleClick(event, d))
       .select("input")
-      .each(function(d) {
+      .each(function (d) {
         d3.select(this).on("blur", (event) => handleInputBlur(event, d));
       });
 
@@ -164,7 +196,9 @@ const D3Chart = ({ width, height, strength }) => {
   const handleInputBlur = (event, d) => {
     const newLabel = event.target.value;
     setNodes((nodes) =>
-      nodes.map((node) => (node.id === d.id ? { ...node, label: newLabel } : node))
+      nodes.map((node) =>
+        node.id === d.id ? { ...node, label: newLabel } : node
+      )
     );
     d.label = newLabel; // Update the D3 node data
     d3.select(event.target).node().value = newLabel; // Update the displayed value
@@ -188,9 +222,7 @@ const D3Chart = ({ width, height, strength }) => {
     if (event.ctrlKey) return;
     if (!dragLine) return;
     setMousedownNode(d);
-    dragLine
-      .classed("hidden", false)
-      .attr("d", `M${d.x},${d.y}L${d.x},${d.y}`);
+    dragLine.classed("hidden", false).attr("d", `M${d.x},${d.y}L${d.x},${d.y}`);
   };
 
   const handleMouseUpNode = (event, d, dragLine) => {

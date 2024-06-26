@@ -7,13 +7,11 @@ import styled from "styled-components";
 const MainContainer = styled.div`
   width: 100vw;
   height: 100vh;
-  flex-direction: ${props => props.fdir ?? "column"};
-  align-items: ${props => props.align ?? "start"};
-  justify-content: ${props => props.justify ?? "start"};
+  flex-direction: ${(props) => props.fdir ?? "column"};
+  align-items: ${(props) => props.align ?? "start"};
+  justify-content: ${(props) => props.justify ?? "start"};
   background-color: brown;
 `;
-
-
 
 function App() {
   const [width, setWidth] = useState(window.innerWidth / 2);
