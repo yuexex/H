@@ -5,6 +5,8 @@ import styled from "styled-components";
 // import "./App.css";
 
 const MainContainer = styled.div`
+  padding: 10px;
+  display: flex;
   width: 100vw;
   height: 100vh;
   flex-direction: ${(props) => props.fdir ?? "column"};
