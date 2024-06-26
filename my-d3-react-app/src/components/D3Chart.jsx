@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
-import { toPng } from "html-to-image";
 import { addNodeOnClick } from "../Util/addNode";
+import ExportButton from "./ExportButton";
+import D3Header from "./D3Header"; // Import the D3Header component
 
 const D3Chart = ({ width, height }) => {
   const d3Container = useRef(null);
@@ -16,11 +17,7 @@ const D3Chart = ({ width, height }) => {
   ]);
 
   useEffect(() => {
-    const svg = d3
-      .select(d3Container.current)
-      .attr("width", width)
-      .attr("height", height)
-      .style("border", "1px solid black");
+    const svg = d3.select(d3Container.current);
 
     const updateGraph = () => {
       svg.selectAll("*").remove();
@@ -125,25 +122,13 @@ const D3Chart = ({ width, height }) => {
     };
   }, [width, height, nodes, links]);
 
-  const exportAsPng = () => {
-    if (d3Container.current) {
-      toPng(d3Container.current)
-        .then((dataUrl) => {
-          const link = document.createElement("a");
-          link.download = "d3-chart.png";
-          link.href = dataUrl;
-          link.click();
-        })
-        .catch((err) => {
-          console.error("Failed to export as PNG", err);
-        });
-    }
-  };
-
   return (
     <div>
+      <D3Header svgRef={d3Container} width={width} height={height} />{" "}
+      {/* Use the D3Header component */}
       <svg ref={d3Container}></svg>
-      <button onClick={exportAsPng}>Export as PNG</button>
+      <ExportButton svgRef={d3Container} />{" "}
+      {/* Use the ExportButton component */}
     </div>
   );
 };
