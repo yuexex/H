@@ -57,14 +57,31 @@ const D3Chart = ({ width, height, strength }) => {
     svg.on("dblclick", null);
     svg.on("click", null);
 
+    // Define arrowhead marker
+    const defs = svg.append("defs");
+
+    defs.append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "-0 -5 10 10")
+      .attr("refX", 10)
+      .attr("refY", 0)
+      .attr("orient", "auto")
+      .attr("markerWidth", 6)
+      .attr("markerHeight", 6)
+      .attr("xoverflow", "visible")
+      .append("svg:path")
+      .attr("d", "M 0,-5 L 10 ,0 L 0,5")
+      .attr("fill", "#000")
+      .style("stroke", "none");
+
     const dragLine = svg
       .append("path")
       .attr("class", "link dragline hidden")
       .attr("d", "M0,0L0,0")
-      .style("marker-end", "url(#end-arrow)");
+      .style("marker-end", "url(#arrowhead)");
 
     const updateGraph = () => {
-      svg.selectAll("*").remove();
+      svg.selectAll("*:not(defs)").remove();
 
       const simulation = d3
         .forceSimulation(nodes)
@@ -79,7 +96,7 @@ const D3Chart = ({ width, height, strength }) => {
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("tick", ticked);
 
-        const link = svg
+      const link = svg
         .append("g")
         .attr("class", "links")
         .selectAll("line")
@@ -100,11 +117,11 @@ const D3Chart = ({ width, height, strength }) => {
 
       node.append("circle")
         .attr("r", 15)
-        .attr("fill", "#00000000");
+        .attr("fill", "#0000");
 
       node.append("text")
         .attr("x", -5)
-        .attr("y", -5)
+        .attr("y", 5)
         .text((d) => d.id)
         .style("user-select", "none");
 
@@ -181,10 +198,10 @@ const D3Chart = ({ width, height, strength }) => {
 
       function ticked() {
         link
-          .attr("x1", (d) => d.source.x)
-          .attr("y1", (d) => d.source.y)
-          .attr("x2", (d) => d.target.x)
-          .attr("y2", (d) => d.target.y);
+          .attr("x1", (d) => getLinkCoords(d.source, d.target, 25).x1)
+          .attr("y1", (d) => getLinkCoords(d.source, d.target, 25).y1)
+          .attr("x2", (d) => getLinkCoords(d.target, d.source, 25).x1)
+          .attr("y2", (d) => getLinkCoords(d.target, d.source, 25).y1);
 
         node.attr("transform", (d) => `translate(${d.x},${d.y})`);
       }
@@ -207,7 +224,7 @@ const D3Chart = ({ width, height, strength }) => {
       }
 
       return () => {
-        svg.selectAll("*").remove();
+        svg.selectAll("*:not(defs)").remove();
         simulation.stop();
       };
     };
@@ -255,6 +272,17 @@ const D3Chart = ({ width, height, strength }) => {
       );
       setNewNodeText("");
     }
+  };
+
+  const getLinkCoords = (source, target, offset) => {
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const ratio = (distance - offset) / distance;
+    return {
+      x1: source.x + dx * ratio,
+      y1: source.y + dy * ratio
+    };
   };
 
   return (
