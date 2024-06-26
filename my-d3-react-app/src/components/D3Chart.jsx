@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { addNodeOnDblClick } from "../Util/addNodeOnDblClick";
@@ -81,7 +79,7 @@ const D3Chart = ({ width, height, strength }) => {
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("tick", ticked);
 
-        const link = svg
+      const link = svg
         .append("g")
         .attr("class", "links")
         .selectAll("line")
@@ -100,11 +98,10 @@ const D3Chart = ({ width, height, strength }) => {
         .enter()
         .append("g");
 
-      node.append("circle")
-        .attr("r", 15)
-        .attr("fill", "#00000000");
+      node.append("circle").attr("r", 15).attr("fill", "#00000000");
 
-      node.append("text")
+      node
+        .append("text")
         .attr("x", -5)
         .attr("y", -5)
         .text((d) => d.id)
@@ -134,21 +131,22 @@ const D3Chart = ({ width, height, strength }) => {
         updateGraph();
       });
 
-      node.on("click", (event, d) => {
-        if (selectedNode === null) {
-          setSelectedNode(d);
-        } else {
-          const newLink = {
-            source: selectedNode,
-            target: d,
-            left: false,
-            right: true,
-          };
-          setLinks([...links, newLink]);
-          setSelectedNode(null);
-          updateGraph();
-        }
-      })
+      node
+        .on("click", (event, d) => {
+          if (selectedNode === null) {
+            setSelectedNode(d);
+          } else {
+            const newLink = {
+              source: selectedNode,
+              target: d,
+              left: false,
+              right: true,
+            };
+            setLinks([...links, newLink]);
+            setSelectedNode(null);
+            updateGraph();
+          }
+        })
         .call(
           d3
             .drag()
@@ -236,7 +234,7 @@ const D3Chart = ({ width, height, strength }) => {
   };
 
   const handleKeyPress = (event) => {
-    if (event.key === 'Enter' && newNodeText.trim() !== "") {
+    if (event.key === "Enter" && newNodeText.trim() !== "") {
       const svg = d3.select(d3Container.current);
       const randomX = Math.random() * width;
       const randomY = Math.random() * height;
@@ -266,11 +264,11 @@ const D3Chart = ({ width, height, strength }) => {
       <DivRow>
         <ExportButton svgRef={d3Container} />
         <RemoveButton onClick={removeLastNode} />
-        <NewNodeInput 
-          value={newNodeText} 
-          onChange={(e) => setNewNodeText(e.target.value)} 
-          onKeyPress={handleKeyPress} 
-          placeholder="Add new node" 
+        <NewNodeInput
+          value={newNodeText}
+          onChange={(e) => setNewNodeText(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Add new node"
         />
       </DivRow>
     </DivColumn>
@@ -278,4 +276,3 @@ const D3Chart = ({ width, height, strength }) => {
 };
 
 export default D3Chart;
->>>>>>> parent of 76374db (added margins on the lines' ends)
