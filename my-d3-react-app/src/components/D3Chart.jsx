@@ -10,17 +10,20 @@ const DivColumn = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: start;
+  gap: 10px;
 `;
 
 const DivRow = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
+  gap: 10px;
 `;
 
 const NewNodeInput = styled.input`
+  padding: 10px;
   box-sizing: border-box;
   height: 40px;
   border-radius: 10px;
@@ -30,7 +33,6 @@ const NewNodeInput = styled.input`
   font-family: Arial;
   font-weight: 500;
   font-size: 18px;
-  margin-left: 10px;
 `;
 
 const D3Chart = ({ width, height, strength }) => {
@@ -77,7 +79,7 @@ const D3Chart = ({ width, height, strength }) => {
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("tick", ticked);
 
-      const link = svg
+        const link = svg
         .append("g")
         .attr("class", "links")
         .selectAll("line")
@@ -85,8 +87,8 @@ const D3Chart = ({ width, height, strength }) => {
         .enter()
         .append("line")
         .attr("stroke-width", 2)
-        .attr("stroke", "#999")
-        .attr("marker-end", "url(#end-arrow)");
+        .attr("stroke", "#000")
+        .attr("marker-end", "url(#arrowhead)");
 
       const node = svg
         .append("g")
