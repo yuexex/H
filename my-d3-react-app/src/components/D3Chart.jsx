@@ -1,22 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
-import { addNodeOnDblClick } from "../Util/addNodeOnDblClick"; // Correct import path
+import { addNodeOnDblClick } from "../Util/addNodeOnDblClick";
 import ExportButton from "./ExportButton";
 import D3Header from "./D3Header";
 import RemoveButton from "./RemoveButton";
 import styled from "styled-components";
 
-
 const DivColumn = styled.div`
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 `;
 
 const DivRow = styled.div`
+  display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
+`;
+
+const NewNodeInput = styled.input`
+  box-sizing: border-box;
+  height: 40px;
+  border-radius: 10px;
+  outline: none;
+  border: 1px solid black;
+  background-color: transparent;
+  font-family: Arial;
+  font-weight: 500;
+  font-size: 18px;
+  margin-left: 10px;
 `;
 
 const D3Chart = ({ width, height, strength }) => {
@@ -33,6 +47,7 @@ const D3Chart = ({ width, height, strength }) => {
   const [lastNodeId, setLastNodeId] = useState("C".charCodeAt(0));
   const [mousedownNode, setMousedownNode] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [newNodeText, setNewNodeText] = useState("");
 
   useEffect(() => {
     const svg = d3.select(d3Container.current);
@@ -76,49 +91,60 @@ const D3Chart = ({ width, height, strength }) => {
       const node = svg
         .append("g")
         .attr("class", "nodes")
-        .selectAll("circle")
+        .selectAll("g")
         .data(nodes)
         .enter()
-        .append("circle")
-        .attr("r", 12)
-        .attr("fill", "#69b3a2")
-        .on("mousedown", (event, d) => {
-          if (event.ctrlKey) return;
-          setMousedownNode(d);
-          dragLine
-            .classed("hidden", false)
-            .attr("d", `M${d.x},${d.y}L${d.x},${d.y}`);
-        })
-        .on("mouseup", (event, d) => {
-          if (!mousedownNode) return;
+        .append("g");
 
-          dragLine.classed("hidden", true);
+      node.append("circle")
+        .attr("r", 15)
+        .attr("fill", "#00000000");
 
+      node.append("text")
+        .attr("x", -5)
+        .attr("y", -5)
+        .text((d) => d.id)
+        .style("user-select", "none");
+
+      node.on("mousedown", (event, d) => {
+        if (event.ctrlKey) return;
+        setMousedownNode(d);
+        dragLine
+          .classed("hidden", false)
+          .attr("d", `M${d.x},${d.y}L${d.x},${d.y}`);
+      });
+
+      node.on("mouseup", (event, d) => {
+        if (!mousedownNode) return;
+
+        dragLine.classed("hidden", true);
+
+        const newLink = {
+          source: mousedownNode,
+          target: d,
+          left: false,
+          right: true,
+        };
+        setLinks([...links, newLink]);
+        setMousedownNode(null);
+        updateGraph();
+      });
+
+      node.on("click", (event, d) => {
+        if (selectedNode === null) {
+          setSelectedNode(d);
+        } else {
           const newLink = {
-            source: mousedownNode,
+            source: selectedNode,
             target: d,
             left: false,
             right: true,
           };
           setLinks([...links, newLink]);
-          setMousedownNode(null);
+          setSelectedNode(null);
           updateGraph();
-        })
-        .on("click", (event, d) => {
-          if (selectedNode === null) {
-            setSelectedNode(d);
-          } else {
-            const newLink = {
-              source: selectedNode,
-              target: d,
-              left: false,
-              right: true,
-            };
-            setLinks([...links, newLink]);
-            setSelectedNode(null);
-            updateGraph();
-          }
-        })
+        }
+      })
         .call(
           d3
             .drag()
@@ -158,7 +184,7 @@ const D3Chart = ({ width, height, strength }) => {
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
 
-        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        node.attr("transform", (d) => `translate(${d.x},${d.y})`);
       }
 
       function dragstarted(event, d) {
@@ -205,14 +231,43 @@ const D3Chart = ({ width, height, strength }) => {
     }
   };
 
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter' && newNodeText.trim() !== "") {
+      const svg = d3.select(d3Container.current);
+      const randomX = Math.random() * width;
+      const randomY = Math.random() * height;
+      const customNode = {
+        x: randomX,
+        y: randomY,
+        id: newNodeText.trim(),
+      };
+      addNodeOnDblClick(
+        svg,
+        nodes,
+        setNodes,
+        links,
+        setLinks,
+        lastNodeId,
+        setLastNodeId,
+        customNode
+      );
+      setNewNodeText("");
+    }
+  };
+
   return (
     <DivColumn>
       <D3Header svgRef={d3Container} width={width} height={height} />
-      <svg ref={d3Container}></svg>
-      {/* <h1>Hello</h1> */}
+      <svg ref={d3Container} width={width} height={height}></svg>
       <DivRow>
         <ExportButton svgRef={d3Container} />
         <RemoveButton onClick={removeLastNode} />
+        <NewNodeInput 
+          value={newNodeText} 
+          onChange={(e) => setNewNodeText(e.target.value)} 
+          onKeyPress={handleKeyPress} 
+          placeholder="Add new node" 
+        />
       </DivRow>
     </DivColumn>
   );
