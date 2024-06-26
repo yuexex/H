@@ -113,17 +113,6 @@ const D3Chart = ({ width, height, strength }) => {
             .on("end", dragended)
         );
 
-      const label = svg
-        .append("g")
-        .attr("class", "labels")
-        .selectAll("text")
-        .data(nodes)
-        .enter()
-        .append("text")
-        .attr("dx", 15)
-        .attr("dy", 4)
-        .text((d) => d.id);
-
       svg.on("mousemove", function (event) {
         if (!mousedownNode) return;
 
@@ -156,8 +145,6 @@ const D3Chart = ({ width, height, strength }) => {
           .attr("y2", (d) => d.target.y);
 
         node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-
-        label.attr("x", (d) => d.x).attr("y", (d) => d.y);
       }
 
       function dragstarted(event, d) {

@@ -1,10 +1,18 @@
 import * as d3 from "d3";
 
-export const addNodeOnClick = (svg, nodes, setNodes, links, setLinks) => {
-  svg.on("click", function (event) {
+export const addNodeOnDblClick = (
+  svg,
+  nodes,
+  setNodes,
+  links,
+  setLinks,
+  lastNodeId,
+  setLastNodeId
+) => {
+  svg.on("dblclick", function (event) {
     const [x, y] = d3.pointer(event);
     const newNode = {
-      id: String.fromCharCode(nodes.length + 65),
+      id: String.fromCharCode(lastNodeId + 1),
       x,
       y,
       reflexive: false,
@@ -13,8 +21,8 @@ export const addNodeOnClick = (svg, nodes, setNodes, links, setLinks) => {
     const newLinks = [
       ...links,
       {
-        source: nodes[nodes.length - 1].id,
-        target: newNode.id,
+        source: nodes[nodes.length - 1],
+        target: newNode,
         left: false,
         right: true,
       },
@@ -22,5 +30,6 @@ export const addNodeOnClick = (svg, nodes, setNodes, links, setLinks) => {
 
     setNodes(newNodes);
     setLinks(newLinks);
+    setLastNodeId(lastNodeId + 1);
   });
 };

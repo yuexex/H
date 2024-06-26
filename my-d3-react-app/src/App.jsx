@@ -22,7 +22,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>D3.js and React Integration</h1>
+        <h1>lol it works now</h1>
       </header>
       <main>
         <SliderControls
