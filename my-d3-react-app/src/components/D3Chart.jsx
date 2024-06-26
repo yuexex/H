@@ -4,6 +4,20 @@ import { addNodeOnDblClick } from "../Util/addNodeOnDblClick"; // Correct import
 import ExportButton from "./ExportButton";
 import D3Header from "./D3Header";
 import RemoveButton from "./RemoveButton";
+import styled from "styled-components";
+
+
+const DivColumn = styled.div`
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+const DivRow = styled.div`
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+`;
 
 const D3Chart = ({ width, height, strength }) => {
   const d3Container = useRef(null);
@@ -192,12 +206,15 @@ const D3Chart = ({ width, height, strength }) => {
   };
 
   return (
-    <div>
+    <DivColumn>
       <D3Header svgRef={d3Container} width={width} height={height} />
       <svg ref={d3Container}></svg>
-      <ExportButton svgRef={d3Container} />
-      <RemoveButton onClick={removeLastNode} />
-    </div>
+      {/* <h1>Hello</h1> */}
+      <DivRow>
+        <ExportButton svgRef={d3Container} />
+        <RemoveButton onClick={removeLastNode} />
+      </DivRow>
+    </DivColumn>
   );
 };
 

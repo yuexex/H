@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import D3Chart from "./components/D3Chart";
 import SliderControls from "./components/SliderControls";
-import "./App.css";
+import styled from "styled-components";
+// import "./App.css";
+
+const MainContainer = styled.div`
+  width: 100vw;
+  height: 100vh;
+  flex-direction: ${props => props.fdir ?? "column"};
+  align-items: ${props => props.align ?? "start"};
+  justify-content: ${props => props.justify ?? "start"};
+  background-color: brown;
+`;
+
+
 
 function App() {
   const [width, setWidth] = useState(window.innerWidth / 2);
@@ -20,22 +32,17 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>lol it works now</h1>
-      </header>
-      <main>
-        <SliderControls
-          width={width}
-          height={height}
-          onWidthChange={setWidth}
-          onHeightChange={setHeight}
-          maxWidth={maxWidth}
-          maxHeight={maxHeight}
-        />
-        <D3Chart width={width} height={height} />
-      </main>
-    </div>
+    <MainContainer>
+      <SliderControls
+        width={width}
+        height={height}
+        onWidthChange={setWidth}
+        onHeightChange={setHeight}
+        maxWidth={maxWidth}
+        maxHeight={maxHeight}
+      />
+      <D3Chart width={width} height={height} />
+    </MainContainer>
   );
 }
 
